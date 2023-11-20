@@ -1,4 +1,4 @@
-const ship = (shipLength) => {
+const ship = (shipLength, id) => {
   const length = shipLength;
   const tiles = Array(length).fill(null);
 
@@ -8,7 +8,7 @@ const ship = (shipLength) => {
   const hit = (i) => (tiles[i] = 'hit');
   const isSunk = () => tiles.every((tile) => tile === 'hit');
 
-  return { getLength, getTiles, hit, isSunk };
+  return { id, getLength, getTiles, hit, isSunk };
 };
 
 export default ship;
