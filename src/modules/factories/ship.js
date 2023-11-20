@@ -1,16 +1,14 @@
-const ship = (shipName, shipLength) => {
-  const name = shipName;
+const ship = (shipLength) => {
   const length = shipLength;
-  let timesHit = 0;
+  const tiles = Array(length).fill(null);
 
-  const getName = () => name;
   const getLength = () => length;
-  const getTimesHit = () => timesHit;
+  const getTiles = () => tiles;
 
-  const hit = () => timesHit++;
-  const isSunk = () => length === timesHit;
+  const hit = (i) => (tiles[i] = 'hit');
+  const isSunk = () => tiles.every((tile) => tile === 'hit');
 
-  return { getName, getLength, getTimesHit, hit, isSunk };
+  return { getLength, getTiles, hit, isSunk };
 };
 
 export default ship;
