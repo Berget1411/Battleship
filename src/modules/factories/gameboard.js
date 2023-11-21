@@ -36,9 +36,7 @@ const gameBoard = () => {
     }
   };
 
-  const findShip = (id) => {
-    return ships.find((ship) => ship.id === id);
-  };
+  const findShip = (id) => ships.find((ship) => ship.id === id);
 
   const receiveAttack = ([x, y]) => {
     if (board[y][x] === 'x') {
@@ -50,7 +48,7 @@ const gameBoard = () => {
       hitShots.push([x, y]);
       const tileId = board[y][x];
       const attackedShip = findShip(tileId[0]);
-      attackedShip.hit(parseInt(tileId[2]));
+      attackedShip.hit(Number(tileId[2]));
       board[y][x] = 'h';
     }
   };
