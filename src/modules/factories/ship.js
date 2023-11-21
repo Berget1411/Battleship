@@ -5,7 +5,9 @@ const ship = (shipLength, id) => {
   const getLength = () => length;
   const getTiles = () => tiles;
 
-  const hit = (i) => (tiles[i] = 'hit');
+  const hit = (i) => {
+    tiles[i] = 'hit';
+  };
   const isSunk = () => tiles.every((tile) => tile === 'hit');
 
   return { id, getLength, getTiles, hit, isSunk };
