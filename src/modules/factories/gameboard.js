@@ -14,9 +14,13 @@ const gameBoard = () => {
   // x = water, s = ship, h = hit, m = miss,
   const board = createBoard();
   const ships = [];
+  const missedShots = [];
+  const hitShots = [];
 
   const getBoard = () => board;
   const getShips = () => ships;
+  const getMissedShots = () => missedShots;
+  const getHitShots = () => hitShots;
 
   const placeShipX = (ship, [x, y]) => {
     ships.push(ship);
@@ -37,9 +41,13 @@ const gameBoard = () => {
   };
 
   const receiveAttack = ([x, y]) => {
-    if (board[y][x] === 'x' || board[y][x] === 'm') {
+    if (board[y][x] === 'x') {
+      missedShots.push([x, y]);
       board[y][x] = 'm';
+    } else if (board[y][x] === 'm') {
+      return false;
     } else {
+      hitShots.push([x, y]);
       const tileId = board[y][x];
       const attackedShip = findShip(tileId[0]);
       attackedShip.hit(parseInt(tileId[2]));
@@ -56,6 +64,8 @@ const gameBoard = () => {
   return {
     getBoard,
     getShips,
+    getMissedShots,
+    getHitShots,
     placeShipX,
     placeShipY,
     receiveAttack,

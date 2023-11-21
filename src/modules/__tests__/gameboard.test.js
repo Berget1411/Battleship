@@ -130,6 +130,32 @@ describe('gameboard', () => {
     });
   });
 
+  describe('stored hit and missed shots', () => {
+    test('two missed shots', () => {
+      board.placeShipY(battleship1, [0, 0]);
+      board.placeShipY(battleship2, [2, 0]);
+
+      board.receiveAttack([3, 1]);
+      board.receiveAttack([5, 3]);
+      expect(board.getMissedShots()).toEqual([
+        [3, 1],
+        [5, 3],
+      ]);
+    });
+
+    test('two hit shots', () => {
+      board.placeShipY(battleship1, [0, 0]);
+      board.placeShipY(battleship2, [2, 0]);
+
+      board.receiveAttack([0, 1]);
+      board.receiveAttack([2, 2]);
+      expect(board.getHitShots()).toEqual([
+        [0, 1],
+        [2, 2],
+      ]);
+    });
+  });
+
   describe('get ships', () => {
     test('gameboard contains battleship1 & battleship2', () => {
       board.placeShipY(battleship1, [0, 0]);
