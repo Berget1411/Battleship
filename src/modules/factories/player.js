@@ -5,7 +5,7 @@ const player = (type) => {
       const x = Math.floor(Math.random() * 10);
       const y = Math.floor(Math.random() * 10);
 
-      if (board.getBoard()[y][x] === 'x') {
+      if (board.getBoard()[y][x] !== 'h' && board.getBoard()[y][x] !== 'm') {
         shot = [x, y];
       }
     }
