@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "type": "module",
   "scripts": {
     "test": "jest --watchAll",
     "watch": "webpack --watch",
@@ -42,6 +41,7 @@
     "webpack-dev-server": "^4.15.1"
   },
   "dependencies": {
-    "date-fns": "^2.30.0"
+    "date-fns": "^2.30.0",
+    "file-loader": "^6.2.0"
   }
 }

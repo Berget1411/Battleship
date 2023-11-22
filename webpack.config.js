@@ -63,7 +63,7 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      title: 'Battleship',
+      title: 'battleship',
       filename: 'index.html',
       template: 'src/template.html',
     }),
