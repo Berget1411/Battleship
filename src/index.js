@@ -1,2 +1,2 @@
-import './modules/UI/ui.js';
+import './modules/UI/dom.js';
 import './styles/main.scss';

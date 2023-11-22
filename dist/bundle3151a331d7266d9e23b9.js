@@ -8,17 +8,17 @@
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _modules_UI_ui_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./modules/UI/ui.js */ "./src/modules/UI/ui.js");
+/* harmony import */ var _modules_UI_dom_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./modules/UI/dom.js */ "./src/modules/UI/dom.js");
 /* harmony import */ var _styles_main_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./styles/main.scss */ "./src/styles/main.scss");
 
 
 
 /***/ }),
 
-/***/ "./src/modules/UI/ui.js":
-/*!******************************!*\
-  !*** ./src/modules/UI/ui.js ***!
-  \******************************/
+/***/ "./src/modules/UI/dom.js":
+/*!*******************************!*\
+  !*** ./src/modules/UI/dom.js ***!
+  \*******************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -37,18 +37,18 @@ var ship4 = (0,_factories_ship__WEBPACK_IMPORTED_MODULE_0__["default"])(4, '4');
 var ship5 = (0,_factories_ship__WEBPACK_IMPORTED_MODULE_0__["default"])(5, '5');
 var human = (0,_factories_player__WEBPACK_IMPORTED_MODULE_1__["default"])('human');
 var humanBoard = (0,_factories_gameboard__WEBPACK_IMPORTED_MODULE_2__["default"])();
-humanBoard.placeShipX(ship1, [0, 0]);
-humanBoard.placeShipX(ship2, [0, 2]);
-humanBoard.placeShipX(ship3, [0, 4]);
-humanBoard.placeShipX(ship4, [0, 6]);
-humanBoard.placeShipX(ship5, [0, 8]);
+humanBoard.placeShipX((0,_factories_ship__WEBPACK_IMPORTED_MODULE_0__["default"])(2, '1'), [0, 0]);
+humanBoard.placeShipX((0,_factories_ship__WEBPACK_IMPORTED_MODULE_0__["default"])(3, '2'), [0, 2]);
+humanBoard.placeShipX((0,_factories_ship__WEBPACK_IMPORTED_MODULE_0__["default"])(3, '3'), [0, 4]);
+humanBoard.placeShipX((0,_factories_ship__WEBPACK_IMPORTED_MODULE_0__["default"])(4, '4'), [0, 6]);
+humanBoard.placeShipX((0,_factories_ship__WEBPACK_IMPORTED_MODULE_0__["default"])(5, '5'), [0, 8]);
 var computer = (0,_factories_player__WEBPACK_IMPORTED_MODULE_1__["default"])('computer');
 var computerBoard = (0,_factories_gameboard__WEBPACK_IMPORTED_MODULE_2__["default"])();
-computerBoard.placeShipX(ship1, [0, 0]);
-computerBoard.placeShipX(ship2, [0, 2]);
-computerBoard.placeShipX(ship3, [0, 4]);
-computerBoard.placeShipX(ship4, [0, 6]);
-computerBoard.placeShipX(ship5, [0, 8]);
+computerBoard.placeShipX((0,_factories_ship__WEBPACK_IMPORTED_MODULE_0__["default"])(2, '1'), [0, 0]);
+computerBoard.placeShipX((0,_factories_ship__WEBPACK_IMPORTED_MODULE_0__["default"])(3, '2'), [0, 2]);
+computerBoard.placeShipX((0,_factories_ship__WEBPACK_IMPORTED_MODULE_0__["default"])(3, '3'), [0, 4]);
+computerBoard.placeShipX((0,_factories_ship__WEBPACK_IMPORTED_MODULE_0__["default"])(4, '4'), [0, 6]);
+computerBoard.placeShipX((0,_factories_ship__WEBPACK_IMPORTED_MODULE_0__["default"])(5, '5'), [0, 8]);
 var renderhumanBoard = function renderhumanBoard() {
   var hBoard = document.querySelector('#human-board');
   for (var i = 0; i < 10; i++) {
@@ -63,44 +63,51 @@ var renderhumanBoard = function renderhumanBoard() {
       } else {
         square.classList.add('ship');
       }
-      square.setAttribute('id', "[".concat([j, i], "]"));
+      square.setAttribute('id', "".concat([j, i]));
       hBoard.append(square);
     }
   }
 };
 var renderComputerBoard = function renderComputerBoard() {
+  var attackSquare = function attackSquare(e) {
+    if (!humanBoard.isAllSunk() && !computerBoard.isAllSunk()) {
+      human.attack(computerBoard, e.target.id.split(','));
+      computer.attack(humanBoard);
+      document.querySelector('#human-board').textContent = '';
+      document.querySelector('#computer-board').textContent = '';
+      renderhumanBoard();
+      renderComputerBoard();
+      if (humanBoard.isAllSunk() && computerBoard.isAllSunk()) {
+        console.log('Draw!');
+      } else if (computerBoard.isAllSunk()) {
+        console.log('Human won!');
+      } else if (humanBoard.isAllSunk()) {
+        console.log('Computer won!');
+      }
+    }
+  };
   var cBoard = document.querySelector('#computer-board');
   for (var i = 0; i < 10; i++) {
     for (var j = 0; j < 10; j++) {
       var square = document.createElement('div');
       if (computerBoard.getBoard()[i][j] === 'x') {
         square.classList.add('empty');
+        square.addEventListener('click', attackSquare);
       } else if (computerBoard.getBoard()[i][j] === 'm') {
         square.classList.add('missed');
       } else if (computerBoard.getBoard()[i][j] === 'h') {
         square.classList.add('hit');
       } else {
         square.classList.add('hiddenShip');
+        square.addEventListener('click', attackSquare);
       }
-      square.setAttribute('id', "[".concat([j, i], "]"));
+      square.setAttribute('id', "".concat([j, i]));
       cBoard.append(square);
     }
   }
 };
-var nextTurn = function nextTurn() {
-  if (counter % 2 === 0) {
-    human.attack(computerBoard, [0, 0]);
-  } else {
-    computer.attack(humanBoard);
-  }
-  console.log(humanBoard.getBoard());
-  console.log(computerBoard.getBoard());
-  counter++;
-};
-nextTurn();
-nextTurn();
-renderComputerBoard();
 renderhumanBoard();
+renderComputerBoard();
 
 /***/ }),
 
@@ -882,4 +889,4 @@ module.exports = styleTagTransform;
 /******/ var __webpack_exports__ = (__webpack_exec__("./src/index.js"));
 /******/ }
 ]);
-//# sourceMappingURL=bundle19ea030ab68d7dd20865.js.map
+//# sourceMappingURL=bundle3151a331d7266d9e23b9.js.map
