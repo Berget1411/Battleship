@@ -43,6 +43,7 @@ const getComputerBoard = () => {
 
       if (ship.getLength() === 2) {
         if (radNum === 0) {
+          if (x + ship.getLength() - 1 > 9) continue;
           computerBoard.placeShipX(ship, [x, y]);
           for (let i = y - 1; i <= y + 1; i++) {
             for (let j = x - 1; j <= x + ship.getLength(); j++) {
@@ -51,6 +52,7 @@ const getComputerBoard = () => {
             }
           }
         } else {
+          if (y + ship.getLength() - 1 > 9) continue;
           computerBoard.placeShipY(ship, [x, y]);
           for (let i = y - 1; i <= y + ship.getLength(); i++) {
             for (let j = x - 1; j <= x + 1; j++) {
@@ -154,7 +156,7 @@ const renderComputerBoard = () => {
       } else if (computerBoard.getBoard()[i][j] === 'h') {
         square.classList.add('hit');
       } else {
-        square.classList.add('hidden-ship');
+        square.classList.add('ship');
         square.addEventListener('click', attackSquare);
       }
       square.setAttribute('id', `${[j, i]}`);
