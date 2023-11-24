@@ -7,9 +7,17 @@
   </head>
   <body>
     <header><h1>Battleship</h1></header>
+    <section id="display">Place your Carrier!</section>
     <main>
-      <div id="human-board" class="board"></div>
-      <div id="computer-board" class="board"></div>
+      <div id="start">
+        <div id="start-board" class="board"></div>
+        <button id="random-ship-placements">Random</button>
+        <button>Vertical</button>
+      </div>
+      <div id="game" class="hidden">
+        <div id="human-board" class="board"></div>
+        <div id="computer-board" class="board"></div>
+      </div>
     </main>
   </body>
 </html>

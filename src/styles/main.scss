@@ -1,4 +1,4 @@
-main {
+#game {
   display: flex;
   justify-content: center;
   gap: 40px;
@@ -32,4 +32,8 @@ main {
   .empty {
     background-color: white;
   }
+}
+
+.hidden {
+  display: none !important;
 }
