@@ -1,4 +1,4 @@
-import ship from '../factories/ship';
+import { ship } from '../factories/ship';
 
 test('hit first tile', () => {
   const battleship = ship(3);
