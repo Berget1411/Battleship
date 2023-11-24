@@ -1,5 +1,5 @@
 import player from '../factories/player';
-import gameBoard from '../factories/gameboard';
+import { gameBoard } from '../factories/gameboard';
 import ship from '../factories/ship';
 
 let p1;

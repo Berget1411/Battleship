@@ -1,4 +1,4 @@
-import gameBoard from '../factories/gameboard';
+import { gameBoard } from '../factories/gameboard';
 import ship from '../factories/ship';
 
 describe('gameboard', () => {

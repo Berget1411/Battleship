@@ -71,4 +71,77 @@ const gameBoard = () => {
   };
 };
 
-export default gameBoard;
+const getRandomBoard = () => {
+  const board = gameBoard();
+  const ships = getShips();
+  const illegalSquares = [];
+
+  for (const i in ships) {
+    const ship = ships[i];
+    const radNum = Math.floor(Math.random() * 2); // 0 for x-placement and 1 for y
+    let valid = true;
+    while (valid) {
+      const x = Math.floor(Math.random() * 10);
+      const y = Math.floor(Math.random() * 10);
+
+      if (ship.getLength() === 2) {
+        if (radNum === 0) {
+          if (x + ship.getLength() - 1 > 9) continue;
+          board.placeShipX(ship, [x, y]);
+          for (let i = y - 1; i <= y + 1; i++) {
+            for (let j = x - 1; j <= x + ship.getLength(); j++) {
+              if (!illegalSquares.includes(`${j},${i}`))
+                illegalSquares.push(`${j},${i}`);
+            }
+          }
+        } else {
+          if (y + ship.getLength() - 1 > 9) continue;
+          board.placeShipY(ship, [x, y]);
+          for (let i = y - 1; i <= y + ship.getLength(); i++) {
+            for (let j = x - 1; j <= x + 1; j++) {
+              if (!illegalSquares.includes(`${j},${i}`))
+                illegalSquares.push(`${j},${i}`);
+            }
+          }
+        }
+        break;
+      }
+      if (illegalSquares.includes(`${x},${y}`)) continue;
+      if (radNum === 0) {
+        if (
+          illegalSquares.includes(`${x + ship.getLength() - 1},${y}`) ||
+          illegalSquares.includes(`${x + ship.getLength() - 2},${y}`) ||
+          illegalSquares.includes(`${x + ship.getLength() - 3},${y}`) ||
+          x + ship.getLength() - 1 > 9
+        )
+          continue;
+        board.placeShipX(ship, [x, y]);
+        for (let i = y - 1; i <= y + 1; i++) {
+          for (let j = x - 1; j <= x + ship.getLength(); j++) {
+            if (!illegalSquares.includes(`${j},${i}`))
+              illegalSquares.push(`${j},${i}`);
+          }
+        }
+      } else {
+        if (
+          illegalSquares.includes(`${x},${y + ship.getLength() - 1}`) ||
+          illegalSquares.includes(`${x},${y + ship.getLength() - 2}`) ||
+          illegalSquares.includes(`${x},${y + ship.getLength() - 3}`) ||
+          y + ship.getLength() - 1 > 9
+        )
+          continue;
+        board.placeShipY(ship, [x, y]);
+        for (let i = y - 1; i <= y + ship.getLength(); i++) {
+          for (let j = x - 1; j <= x + 1; j++) {
+            if (!illegalSquares.includes(`${j},${i}`))
+              illegalSquares.push(`${j},${i}`);
+          }
+        }
+      }
+      break;
+    }
+  }
+  return board;
+};
+
+export { gameBoard, getRandomBoard };
