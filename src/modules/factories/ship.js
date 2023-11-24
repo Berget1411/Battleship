@@ -13,4 +13,14 @@ const ship = (shipLength, id) => {
   return { id, getLength, getTiles, hit, isSunk };
 };
 
-export default ship;
+const getShips = () => {
+  return {
+    destroyer: ship(2, '1'),
+    submarine: ship(3, '2'),
+    cruiser: ship(3, '3'),
+    battleship: ship(4, '4'),
+    carrier: ship(5, '5'),
+  };
+};
+
+export { ship, getShips };

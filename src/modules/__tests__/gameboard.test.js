@@ -1,5 +1,5 @@
 import { gameBoard } from '../factories/gameboard';
-import ship from '../factories/ship';
+import { ship } from '../factories/ship';
 
 describe('gameboard', () => {
   let battleship1;
