@@ -78,8 +78,7 @@ const getRandomBoard = () => {
   const ships = getShips();
   const illegalSquares = [];
 
-  for (const i in ships) {
-    const ship = ships[i];
+  ships.forEach((ship) => {
     const radNum = Math.floor(Math.random() * 2); // 0 for x-placement and 1 for y
     let valid = true;
     while (valid) {
@@ -142,7 +141,7 @@ const getRandomBoard = () => {
       }
       break;
     }
-  }
+  });
   return board;
 };
 
