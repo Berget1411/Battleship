@@ -1,6 +1,6 @@
 import player from '../factories/player';
 import { gameBoard } from '../factories/gameboard';
-import ship from '../factories/ship';
+import { ship } from '../factories/ship';
 
 let p1;
 let p2;
