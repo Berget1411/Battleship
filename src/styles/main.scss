@@ -2,6 +2,7 @@
   display: flex;
   justify-content: center;
   gap: 40px;
+  position: relative;
 }
 
 .board {
@@ -40,4 +41,27 @@
 
 .active {
   background-color: aquamarine !important;
+}
+
+#end-screen {
+  text-align: center;
+  position: fixed;
+  top: 25%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  z-index: 10;
+
+  width: 400px;
+  padding: 20px;
+  border-radius: 10px;
+  background-color: rgba(0, 0, 0, 0.2);
+
+  p {
+    font-size: 2.2em;
+    color: blue;
+  }
+}
+
+.end-screen-active {
+  transform: translate(-50%, -50%) scale(1) !important;
 }

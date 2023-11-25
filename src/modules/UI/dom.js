@@ -3,36 +3,43 @@ import player from '../factories/player';
 import { gameBoard, getRandomBoard } from '../factories/gameboard';
 
 const dom = (() => {
-  let gameStatus = true;
-  let counter = 0;
   const human = player('human');
   let humanBoard;
   const computer = player('computer');
   let computerBoard;
   const startScreen = document.querySelector('#start');
   const gameScreen = document.querySelector('#game');
+  const display = document.querySelector('#display');
+
+  const shipNames = [
+    'Destroyer',
+    'Submarine',
+    'Cruiser',
+    'Battleship',
+    'Carrier',
+  ];
   let direction = 'horizontal';
 
-  const getStartScreen = () => {
+  const reset = () => {
+    document.querySelector('#end-screen').classList.remove('end-screen-active');
+    document.querySelector('#human-board').textContent = '';
+    document.querySelector('#computer-board').textContent = '';
+    startScreen.textContent = '';
+    startScreen.classList.remove('hidden');
+    gameScreen.classList.add('hidden');
+    direction = 'horizontal';
     humanBoard = gameBoard();
-    renderStartBoard();
+    computerBoard = getRandomBoard();
+  };
 
-    const clickedfunc = () => {
-      humanBoard = getRandomBoard();
-      computerBoard = getRandomBoard();
-      renderHumanBoard();
-      renderComputerBoard();
-      document.querySelector('#start').classList.toggle('hidden');
-      document.querySelector('#game').classList.toggle('hidden');
-    };
-    document
-      .querySelector('#random-ship-placements')
-      .addEventListener('click', clickedfunc);
+  const getStartScreen = () => {
+    reset();
+    renderStartBoard();
   };
 
   const startGame = () => {
-    computerBoard = getRandomBoard();
     startScreen.classList.toggle('hidden');
+
     renderHumanBoard();
     renderComputerBoard();
     gameScreen.classList.toggle('hidden');
@@ -81,6 +88,10 @@ const dom = (() => {
     }
 
     function attackSquare(e) {
+      const endScreen = document.querySelector('#end-screen');
+      const endScreenText = document.querySelector('#end-screen p');
+      const playAgain = document.querySelector('#end-screen button');
+
       if (!humanBoard.isAllSunk() && !computerBoard.isAllSunk()) {
         human.attack(computerBoard, e.target.id.split(','));
         computer.attack(humanBoard);
@@ -90,11 +101,15 @@ const dom = (() => {
         renderComputerBoard();
 
         if (humanBoard.isAllSunk() && computerBoard.isAllSunk()) {
-          console.log('Draw!');
+          endScreen.classList.add('end-screen-active');
+          endScreenText.textContent = 'Draw!';
         } else if (computerBoard.isAllSunk()) {
-          console.log('Human won!');
+          endScreen.classList.add('end-screen-active');
+          endScreenText.textContent = 'You won!';
+          playAgain.addEventListener('click', getStartScreen);
         } else if (humanBoard.isAllSunk()) {
-          console.log('Computer won!');
+          endScreen.classList.add('end-screen-active');
+          endScreenText.textContent = 'Computer won!';
         }
       }
     }
@@ -103,6 +118,8 @@ const dom = (() => {
   const renderBoard = (ships) => {
     const ship = ships[ships.length - 1];
     const shipLength = ship.getLength();
+
+    display.textContent = `Place your ${shipNames[ships.length - 1]}!`;
 
     const startBoard = document.querySelector('#start-board');
     startBoard.textContent = '';
@@ -208,16 +225,39 @@ const dom = (() => {
   };
 
   const renderStartBoard = () => {
+    const startBoard = document.createElement('div');
+    startBoard.classList.add('board');
+    startBoard.setAttribute('id', 'start-board');
+    startScreen.append(startBoard);
     const ships = getShips();
     renderBoard(ships);
 
-    document.querySelector('#direction').addEventListener('click', (e) => {
+    const randomButton = document.createElement('button');
+    randomButton.setAttribute('id', 'random-ship-placements');
+    randomButton.textContent = 'Random';
+    const directionButton = document.createElement('button');
+    directionButton.setAttribute('id', 'direction');
+    directionButton.textContent = 'vertical';
+    startScreen.append(randomButton, directionButton);
+
+    const randomBoard = () => {
+      humanBoard = getRandomBoard();
+      renderHumanBoard();
+      renderComputerBoard();
+      document.querySelector('#start').classList.toggle('hidden');
+      document.querySelector('#game').classList.toggle('hidden');
+    };
+    randomButton.addEventListener('click', randomBoard);
+
+    const changeDirection = (e) => {
       const oldDirection = direction;
       const newDirection = e.target.textContent;
       direction = newDirection;
       e.target.textContent = oldDirection;
       renderBoard(ships);
-    });
+    };
+
+    directionButton.addEventListener('click', changeDirection);
   };
   return { getStartScreen };
 })();
