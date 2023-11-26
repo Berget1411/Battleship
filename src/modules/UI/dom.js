@@ -9,7 +9,7 @@ const dom = (() => {
   let computerBoard;
   const startScreen = document.querySelector('#start');
   const gameScreen = document.querySelector('#game');
-  const display = document.querySelector('#display');
+  let whosTurn = 'player';
 
   const shipNames = [
     'Destroyer',
@@ -47,6 +47,7 @@ const dom = (() => {
 
   const renderHumanBoard = () => {
     const hBoard = document.querySelector('#human-board');
+    document.querySelector('#enemy').classList.add('playing');
 
     for (let i = 0; i < 10; i++) {
       for (let j = 0; j < 10; j++) {
@@ -55,14 +56,27 @@ const dom = (() => {
           square.classList.add('empty');
         } else if (humanBoard.getBoard()[i][j] === 'm') {
           square.classList.add('missed');
+          square.innerHTML = '&#x2022;';
         } else if (humanBoard.getBoard()[i][j] === 'h') {
           square.classList.add('hit');
+          square.innerHTML = '&#10005;';
         } else {
           square.classList.add('ship');
         }
         square.setAttribute('id', `${[j, i]}`);
         hBoard.append(square);
       }
+    }
+    document.querySelector('#friendly-ships ul').textContent = '';
+
+    for (let i = 0; i < 5; i++) {
+      const ship = humanBoard.getShips()[i];
+
+      const li = document.createElement('li');
+      li.textContent = `${shipNames[i]} (${ship.getLength()})`;
+      if (ship.isSunk()) li.classList.add('sunk');
+
+      document.querySelector('#friendly-ships ul').prepend(li);
     }
   };
 
@@ -76,8 +90,10 @@ const dom = (() => {
           square.addEventListener('click', attackSquare);
         } else if (computerBoard.getBoard()[i][j] === 'm') {
           square.classList.add('missed');
+          square.innerHTML = '&#x2022;';
         } else if (computerBoard.getBoard()[i][j] === 'h') {
           square.classList.add('hit');
+          square.innerHTML = '&#10005;';
         } else {
           square.classList.add('ship');
           square.addEventListener('click', attackSquare);
@@ -88,30 +104,87 @@ const dom = (() => {
     }
 
     function attackSquare(e) {
+      if (whosTurn !== 'player') return;
+
       const endScreen = document.querySelector('#end-screen');
       const endScreenText = document.querySelector('#end-screen p');
       const playAgain = document.querySelector('#end-screen button');
 
       if (!humanBoard.isAllSunk() && !computerBoard.isAllSunk()) {
+        document.querySelector('#friendly-status').classList.add('invisible');
+        document.querySelector('#enemy-status').classList.remove('invisible');
         human.attack(computerBoard, e.target.id.split(','));
         computer.attack(humanBoard);
-        document.querySelector('#human-board').textContent = '';
+
+        whosTurn = 'computer';
         document.querySelector('#computer-board').textContent = '';
-        renderHumanBoard();
         renderComputerBoard();
 
+        document.querySelector('#friendly').classList.add('playing');
+        document.querySelector('#enemy').classList.remove('playing');
+
+        setTimeout(() => {
+          document.querySelector('#human-board').textContent = '';
+          renderHumanBoard();
+          document
+            .querySelector('#friendly-status')
+            .classList.remove('invisible');
+          document.querySelector('#enemy-status').classList.add('invisible');
+          whosTurn = 'player';
+
+          if (endScreenText.textContent === '') {
+            document.querySelector('#friendly').classList.remove('playing');
+            document.querySelector('#enemy').classList.add('playing');
+          } else {
+            document.querySelector('#friendly').classList.remove('playing');
+            document.querySelector('#enemy').classList.remove('playing');
+            document
+              .querySelector('#friendly-status')
+              .classList.add('invisible');
+            document.querySelector('#enemy-status').classList.add('invisible');
+          }
+        }, 1);
+
         if (humanBoard.isAllSunk() && computerBoard.isAllSunk()) {
+          document.querySelector('#enemy').classList.remove('playing');
+          document.querySelector('#friendly').classList.remove('playing');
           endScreen.classList.add('end-screen-active');
           endScreenText.textContent = 'Draw!';
+          playAgain.addEventListener('click', () => {
+            endScreenText.textContent = '';
+            getStartScreen();
+          });
         } else if (computerBoard.isAllSunk()) {
+          document.querySelector('#friendly').classList.remove('playing');
+          document.querySelector('#enemy').classList.remove('playing');
           endScreen.classList.add('end-screen-active');
           endScreenText.textContent = 'You won!';
-          playAgain.addEventListener('click', getStartScreen);
+          playAgain.addEventListener('click', () => {
+            endScreenText.textContent = '';
+            getStartScreen();
+          });
         } else if (humanBoard.isAllSunk()) {
+          document.querySelector('#enemy').classList.remove('playing');
+          document.querySelector('#friendly').classList.remove('playing');
           endScreen.classList.add('end-screen-active');
           endScreenText.textContent = 'Computer won!';
+          playAgain.addEventListener('click', () => {
+            endScreenText.textContent = '';
+            getStartScreen();
+          });
         }
       }
+    }
+    document.querySelector('#enemy-ships ul').textContent = '';
+
+    for (let i = 0; i < 5; i++) {
+      const ship = computerBoard.getShips()[i];
+
+      const li = document.createElement('li');
+      li.textContent = `${shipNames[i]} (${ship.getLength()})`;
+      if (ship.isSunk()) li.classList.add('sunk');
+
+      document.querySelector('#enemy-ships ul').prepend(li);
     }
   };
 
@@ -119,7 +192,9 @@ const dom = (() => {
     const ship = ships[ships.length - 1];
     const shipLength = ship.getLength();
 
-    display.textContent = `Place your ${shipNames[ships.length - 1]}!`;
+    document.querySelector('.place-instruction').textContent = `Place your ${
+      shipNames[ships.length - 1]
+    }!`;
 
     const startBoard = document.querySelector('#start-board');
     startBoard.textContent = '';
@@ -228,17 +303,24 @@ const dom = (() => {
     const startBoard = document.createElement('div');
     startBoard.classList.add('board');
     startBoard.setAttribute('id', 'start-board');
-    startScreen.append(startBoard);
-    const ships = getShips();
-    renderBoard(ships);
+
+    const placeInstruction = document.createElement('div');
+    placeInstruction.classList.add('place-instruction');
+    const rotateInstruction = document.createElement('div');
+    rotateInstruction.classList.add('rotate-instruction');
+    rotateInstruction.textContent = '(Press R to rotate ship)';
 
     const randomButton = document.createElement('button');
     randomButton.setAttribute('id', 'random-ship-placements');
     randomButton.textContent = 'Random';
-    const directionButton = document.createElement('button');
-    directionButton.setAttribute('id', 'direction');
-    directionButton.textContent = 'vertical';
-    startScreen.append(randomButton, directionButton);
+    startScreen.append(
+      startBoard,
+      placeInstruction,
+      rotateInstruction,
+      randomButton,
+    );
+    const ships = getShips();
+    renderBoard(ships);
 
     const randomBoard = () => {
       humanBoard = getRandomBoard();
@@ -249,15 +331,19 @@ const dom = (() => {
     };
     randomButton.addEventListener('click', randomBoard);
 
-    const changeDirection = (e) => {
-      const oldDirection = direction;
-      const newDirection = e.target.textContent;
-      direction = newDirection;
-      e.target.textContent = oldDirection;
-      renderBoard(ships);
+    const changeDirection = () => {
+      if (direction === 'horizontal') direction = 'vertical';
+      else {
+        direction = 'horizontal';
+      }
     };
 
-    directionButton.addEventListener('click', changeDirection);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'r') {
+        changeDirection();
+        renderBoard(ships);
+      }
+    });
   };
   return { getStartScreen };
 })();

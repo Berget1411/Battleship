@@ -7,19 +7,41 @@
   </head>
   <body>
     <header><h1>Battleship</h1></header>
-    <section id="display">Place your Carrier!</section>
     <main>
       <div id="start">
         <div id="start-board" class="board"></div>
       </div>
       <div id="game">
-        <div id="human-board" class="board"></div>
-        <div id="computer-board" class="board"></div>
+        <div id="friendly">
+          <h2>Friendly seas</h2>
+          <div id="human-board" class="board"></div>
+          <div id="friendly-ships">
+            <p id="enemy-status">Thinking...</p>
+            <h3>Friendly ships:</h3>
+            <ul></ul>
+          </div>
+        </div>
+        <div id="enemy">
+          <h2>Enemy seas</h2>
+          <div id="computer-board" class="board"></div>
+          <p id="friendly-status">Place your attack!</p>
+          <div id="enemy-ships">
+            <h3>Enemy ships:</h3>
+            <ul></ul>
+          </div>
+        </div>
+
         <div id="end-screen">
-          <p>You won!</p>
+          <p></p>
           <button>Play again</button>
         </div>
       </div>
     </main>
+    <footer>
+      <p>
+        Built by <a href="https://github.com/Berget1411">Berget</a> |
+        <a href="https://github.com/Berget1411/Battleship">Source code</a>
+      </p>
+    </footer>
   </body>
 </html>
