@@ -4,20 +4,44 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Battleship</title>
-  <script defer src="runtimebe08cb898b3261242863.js"></script><script defer src="bundlee0aa53a42d8cc8b937cf.js"></script></head>
+  <script defer src="runtimebe08cb898b3261242863.js"></script><script defer src="bundle53e55c5f0781b8b701e9.js"></script></head>
   <body>
     <header><h1>Battleship</h1></header>
-    <section id="display">Place your Carrier!</section>
     <main>
       <div id="start">
         <div id="start-board" class="board"></div>
-        <button id="random-ship-placements">Random</button>
-        <button>Vertical</button>
       </div>
-      <div id="game" class="hidden">
-        <div id="human-board" class="board"></div>
-        <div id="computer-board" class="board"></div>
+      <div id="game">
+        <div id="friendly">
+          <h2>Friendly seas</h2>
+          <div id="human-board" class="board"></div>
+          <div id="friendly-ships">
+            <p id="enemy-status">Thinking...</p>
+            <h3>Friendly ships:</h3>
+            <ul></ul>
+          </div>
+        </div>
+        <div id="enemy">
+          <h2>Enemy seas</h2>
+          <div id="computer-board" class="board"></div>
+          <p id="friendly-status">Place your attack!</p>
+          <div id="enemy-ships">
+            <h3>Enemy ships:</h3>
+            <ul></ul>
+          </div>
+        </div>
+
+        <div id="end-screen">
+          <p></p>
+          <button>Play again</button>
+        </div>
       </div>
     </main>
+    <footer>
+      <p>
+        Built by <a href="https://github.com/Berget1411">Berget</a> |
+        <a href="https://github.com/Berget1411/Battleship">Source code</a>
+      </p>
+    </footer>
   </body>
 </html>

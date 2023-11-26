@@ -33,35 +33,43 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var dom = function () {
-  var gameStatus = true;
-  var counter = 0;
   var human = (0,_factories_player__WEBPACK_IMPORTED_MODULE_1__["default"])('human');
   var humanBoard;
   var computer = (0,_factories_player__WEBPACK_IMPORTED_MODULE_1__["default"])('computer');
   var computerBoard;
   var startScreen = document.querySelector('#start');
   var gameScreen = document.querySelector('#game');
-  var getStartScreen = function getStartScreen() {
+  var whosTurn = 'player';
+  var direction = 'horizontal';
+  var reset = function reset() {
+    document.querySelector('#end-screen').classList.remove('end-screen-active');
+    document.querySelector('#human-board').textContent = '';
+    document.querySelector('#computer-board').textContent = '';
+    startScreen.textContent = '';
+    startScreen.classList.remove('hidden');
+    gameScreen.classList.add('hidden');
+    whosTurn = 'player';
+    direction = 'horizontal';
     humanBoard = (0,_factories_gameboard__WEBPACK_IMPORTED_MODULE_2__.gameBoard)();
-    renderStartBoard();
-    var clickedfunc = function clickedfunc() {
-      humanBoard = (0,_factories_gameboard__WEBPACK_IMPORTED_MODULE_2__.getRandomBoard)();
-      computerBoard = (0,_factories_gameboard__WEBPACK_IMPORTED_MODULE_2__.getRandomBoard)();
-      renderHumanBoard();
-      renderComputerBoard();
-      document.querySelector('#start').classList.toggle('hidden');
-      document.querySelector('#game').classList.toggle('hidden');
-    };
-    document.querySelector('#random-ship-placements').addEventListener('click', clickedfunc);
+    computerBoard = (0,_factories_gameboard__WEBPACK_IMPORTED_MODULE_2__.getRandomBoard)();
+  };
+  var getStartScreen = function getStartScreen() {
+    reset();
+    renderStart();
   };
   var startGame = function startGame() {
-    startScreen.classList.toggle('hidden');
+    startScreen.classList.add('hidden');
+    renderHuman();
+    renderComputer();
+    gameScreen.classList.remove('hidden');
+  };
+  var renderHuman = function renderHuman() {
     renderHumanBoard();
-    renderComputerBoard();
-    gameScreen.classList.toggle('hidden');
+    displayHumanShip();
   };
   var renderHumanBoard = function renderHumanBoard() {
     var hBoard = document.querySelector('#human-board');
+    document.querySelector('#enemy').classList.add('playing');
     for (var i = 0; i < 10; i++) {
       for (var j = 0; j < 10; j++) {
         var square = document.createElement('div');
@@ -69,8 +77,10 @@ var dom = function () {
           square.classList.add('empty');
         } else if (humanBoard.getBoard()[i][j] === 'm') {
           square.classList.add('missed');
+          square.innerHTML = '&#x2022;';
         } else if (humanBoard.getBoard()[i][j] === 'h') {
           square.classList.add('hit');
+          square.innerHTML = '&#10005;';
         } else {
           square.classList.add('ship');
         }
@@ -78,6 +88,20 @@ var dom = function () {
         hBoard.append(square);
       }
     }
+  };
+  var displayHumanShip = function displayHumanShip() {
+    document.querySelector('#friendly-ships ul').textContent = '';
+    for (var i = 0; i < 5; i++) {
+      var _ship = humanBoard.getShips()[i];
+      var li = document.createElement('li');
+      li.textContent = "".concat((0,_factories_ship__WEBPACK_IMPORTED_MODULE_0__.getShipNames)()[i], " (").concat(_ship.getLength(), ")");
+      if (_ship.isSunk()) li.classList.add('sunk');
+      document.querySelector('#friendly-ships ul').prepend(li);
+    }
+  };
+  var renderComputer = function renderComputer() {
+    renderComputerBoard();
+    displayComputerShips();
   };
   var renderComputerBoard = function renderComputerBoard() {
     var cBoard = document.querySelector('#computer-board');
@@ -89,45 +113,143 @@ var dom = function () {
           square.addEventListener('click', attackSquare);
         } else if (computerBoard.getBoard()[i][j] === 'm') {
           square.classList.add('missed');
+          square.innerHTML = '&#x2022;';
         } else if (computerBoard.getBoard()[i][j] === 'h') {
           square.classList.add('hit');
+          square.innerHTML = '&#10005;';
         } else {
-          square.classList.add('ship');
           square.addEventListener('click', attackSquare);
         }
         square.setAttribute('id', "".concat([j, i]));
         cBoard.append(square);
       }
     }
-    function attackSquare(e) {
-      if (!humanBoard.isAllSunk() && !computerBoard.isAllSunk()) {
-        human.attack(computerBoard, e.target.id.split(','));
-        computer.attack(humanBoard);
+  };
+  var attackSquare = function attackSquare(e) {
+    if (whosTurn !== 'player') return;
+    var endScreen = document.querySelector('#end-screen');
+    var endScreenText = document.querySelector('#end-screen p');
+    var playAgain = document.querySelector('#end-screen button');
+    if (!humanBoard.isAllSunk() && !computerBoard.isAllSunk()) {
+      document.querySelector('#friendly-status').classList.add('invisible');
+      document.querySelector('#enemy-status').classList.remove('invisible');
+      human.attack(computerBoard, e.target.id.split(','));
+      computer.attack(humanBoard);
+      whosTurn = 'computer';
+      document.querySelector('#computer-board').textContent = '';
+      renderComputer();
+      document.querySelector('#friendly').classList.add('playing');
+      document.querySelector('#enemy').classList.remove('playing');
+      var togglePlaying = function togglePlaying() {
+        document.querySelector('#friendly').classList.remove('playing');
+        document.querySelector('#enemy').classList.add('playing');
+      };
+      setTimeout(function () {
         document.querySelector('#human-board').textContent = '';
-        document.querySelector('#computer-board').textContent = '';
-        renderHumanBoard();
-        renderComputerBoard();
-        if (humanBoard.isAllSunk() && computerBoard.isAllSunk()) {
-          console.log('Draw!');
-        } else if (computerBoard.isAllSunk()) {
-          console.log('Human won!');
-        } else if (humanBoard.isAllSunk()) {
-          console.log('Computer won!');
+        renderHuman();
+        document.querySelector('#friendly-status').classList.remove('invisible');
+        document.querySelector('#enemy-status').classList.add('invisible');
+        whosTurn = 'player';
+        if (endScreenText.textContent === '') togglePlaying();else {
+          document.querySelector('#friendly').classList.remove('playing');
+          document.querySelector('#enemy').classList.remove('playing');
+          document.querySelector('#friendly-status').classList.add('invisible');
+          document.querySelector('#enemy-status').classList.add('invisible');
         }
+      }, 1500);
+      playAgain.addEventListener('click', function () {
+        endScreenText.textContent = '';
+        getStartScreen();
+      }, {
+        once: true
+      });
+      if (humanBoard.isAllSunk() && computerBoard.isAllSunk()) {
+        endScreen.classList.add('end-screen-active');
+        endScreenText.textContent = 'Draw!';
+      } else if (computerBoard.isAllSunk()) {
+        endScreen.classList.add('end-screen-active');
+        endScreenText.textContent = 'You won!';
+      } else if (humanBoard.isAllSunk()) {
+        endScreen.classList.add('end-screen-active');
+        endScreenText.textContent = 'Computer won!';
       }
     }
   };
-  var renderStartBoard = function renderStartBoard() {
+  var displayComputerShips = function displayComputerShips() {
+    document.querySelector('#enemy-ships ul').textContent = '';
+    for (var i = 0; i < 5; i++) {
+      var _ship2 = computerBoard.getShips()[i];
+      var li = document.createElement('li');
+      li.textContent = "".concat((0,_factories_ship__WEBPACK_IMPORTED_MODULE_0__.getShipNames)()[i], " (").concat(_ship2.getLength(), ")");
+      if (_ship2.isSunk()) li.classList.add('sunk');
+      document.querySelector('#enemy-ships ul').prepend(li);
+    }
+  };
+  var renderStartBoard = function renderStartBoard(ships) {
+    var ship = ships[ships.length - 1];
+    var shipLength = ship.getLength();
+    document.querySelector('.place-instruction').textContent = "Place your ".concat((0,_factories_ship__WEBPACK_IMPORTED_MODULE_0__.getShipNames)()[ships.length - 1], "!");
     var startBoard = document.querySelector('#start-board');
+    startBoard.textContent = '';
     for (var i = 0; i < 10; i++) {
       for (var j = 0; j < 10; j++) {
         var square = document.createElement('div');
         if (humanBoard.getBoard()[i][j] === 'x') {
           square.classList.add('empty');
-        } else if (humanBoard.getBoard()[i][j] === 'm') {
-          square.classList.add('missed');
-        } else if (humanBoard.getBoard()[i][j] === 'h') {
-          square.classList.add('hit');
+          if (direction === 'horizontal') {
+            square.addEventListener('mouseover', function (e) {
+              for (var _i = 0; _i < shipLength; _i++) {
+                var coordinates = "".concat(Number(e.target.id[0]) + _i, ",").concat(e.target.id[2]);
+                if (Number(e.target.id[0]) + _i < 10) document.getElementById("".concat(coordinates)).classList.add('active');
+              }
+            });
+            square.addEventListener('mouseleave', function (e) {
+              e.target.classList.remove('active');
+              for (var _i2 = 0; _i2 < shipLength; _i2++) {
+                var coordinates = "".concat(Number(e.target.id[0]) + _i2, ",").concat(e.target.id[2]);
+                if (Number(e.target.id[0]) + _i2 < 10) document.getElementById("".concat(coordinates)).classList.remove('active');
+              }
+            });
+            square.addEventListener('click', function (e) {
+              if (Number(e.target.id[0]) + shipLength > 10) return;
+              for (var _i3 = 0; _i3 < shipLength; _i3++) {
+                var x = Number(e.target.id[0]) + _i3;
+                var y = e.target.id[2];
+                if (humanBoard.getBoard()[y][x] !== 'x') return;
+              }
+              humanBoard.placeShipX(ship, [Number(e.target.id[0]), Number(e.target.id[2])]);
+              if (ships.length > 1) {
+                ships.pop();
+                renderStartBoard(ships, direction);
+              } else {
+                startGame();
+              }
+            });
+          } else {
+            square.addEventListener('mouseover', function (e) {
+              for (var _i4 = 0; _i4 < shipLength; _i4++) {
+                var coordinates = "".concat(e.target.id[0], ",").concat(Number(e.target.id[2]) + _i4);
+                if (Number(e.target.id[2]) + _i4 < 10) document.getElementById("".concat(coordinates)).classList.add('active');
+              }
+            });
+            square.addEventListener('mouseleave', function (e) {
+              e.target.classList.remove('active');
+              for (var _i5 = 0; _i5 < shipLength; _i5++) {
+                var coordinates = "".concat(e.target.id[0], ",").concat(Number(e.target.id[2]) + _i5);
+                if (Number(e.target.id[2]) + _i5 < 10) document.getElementById("".concat(coordinates)).classList.remove('active');
+              }
+            });
+            square.addEventListener('click', function (e) {
+              if (Number(e.target.id[2]) + shipLength > 10) return;
+              humanBoard.placeShipY(ship, [Number(e.target.id[0]), Number(e.target.id[2])]);
+              if (ships.length > 1) {
+                ships.pop();
+                renderStartBoard(ships, direction);
+              } else {
+                startGame();
+              }
+            });
+          }
         } else {
           square.classList.add('ship');
         }
@@ -135,6 +257,35 @@ var dom = function () {
         startBoard.append(square);
       }
     }
+  };
+  var renderStart = function renderStart() {
+    var startBoard = document.createElement('div');
+    startBoard.classList.add('board');
+    startBoard.setAttribute('id', 'start-board');
+    var placeInstruction = document.createElement('div');
+    placeInstruction.classList.add('place-instruction');
+    var rotateInstruction = document.createElement('div');
+    rotateInstruction.classList.add('rotate-instruction');
+    rotateInstruction.textContent = '(Press R to rotate ship)';
+    var randomButton = document.createElement('button');
+    randomButton.setAttribute('id', 'random-ship-placements');
+    randomButton.textContent = 'Random';
+    startScreen.append(startBoard, placeInstruction, rotateInstruction, randomButton);
+    var ships = (0,_factories_ship__WEBPACK_IMPORTED_MODULE_0__.getShips)();
+    renderStartBoard(ships);
+    randomButton.addEventListener('click', function () {
+      humanBoard = (0,_factories_gameboard__WEBPACK_IMPORTED_MODULE_2__.getRandomBoard)();
+      startGame();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'r') {
+        changeDirection();
+        renderStartBoard(ships);
+      }
+    });
+  };
+  var changeDirection = function changeDirection() {
+    return direction === 'horizontal' ? direction = 'vertical' : direction = 'horizontal';
   };
   return {
     getStartScreen: getStartScreen
@@ -297,8 +448,7 @@ var getRandomBoard = function getRandomBoard() {
   var board = gameBoard();
   var ships = (0,_ship__WEBPACK_IMPORTED_MODULE_0__.getShips)();
   var illegalSquares = [];
-  for (var i in ships) {
-    var ship = ships[i];
+  ships.forEach(function (ship) {
     var radNum = Math.floor(Math.random() * 2); // 0 for x-placement and 1 for y
     var valid = true;
     while (valid) {
@@ -308,17 +458,17 @@ var getRandomBoard = function getRandomBoard() {
         if (radNum === 0) {
           if (x + ship.getLength() - 1 > 9) continue;
           board.placeShipX(ship, [x, y]);
-          for (var _i2 = y - 1; _i2 <= y + 1; _i2++) {
+          for (var i = y - 1; i <= y + 1; i++) {
             for (var j = x - 1; j <= x + ship.getLength(); j++) {
-              if (!illegalSquares.includes("".concat(j, ",").concat(_i2))) illegalSquares.push("".concat(j, ",").concat(_i2));
+              if (!illegalSquares.includes("".concat(j, ",").concat(i))) illegalSquares.push("".concat(j, ",").concat(i));
             }
           }
         } else {
           if (y + ship.getLength() - 1 > 9) continue;
           board.placeShipY(ship, [x, y]);
-          for (var _i3 = y - 1; _i3 <= y + ship.getLength(); _i3++) {
+          for (var _i2 = y - 1; _i2 <= y + ship.getLength(); _i2++) {
             for (var _j = x - 1; _j <= x + 1; _j++) {
-              if (!illegalSquares.includes("".concat(_j, ",").concat(_i3))) illegalSquares.push("".concat(_j, ",").concat(_i3));
+              if (!illegalSquares.includes("".concat(_j, ",").concat(_i2))) illegalSquares.push("".concat(_j, ",").concat(_i2));
             }
           }
         }
@@ -328,23 +478,23 @@ var getRandomBoard = function getRandomBoard() {
       if (radNum === 0) {
         if (illegalSquares.includes("".concat(x + ship.getLength() - 1, ",").concat(y)) || illegalSquares.includes("".concat(x + ship.getLength() - 2, ",").concat(y)) || illegalSquares.includes("".concat(x + ship.getLength() - 3, ",").concat(y)) || x + ship.getLength() - 1 > 9) continue;
         board.placeShipX(ship, [x, y]);
-        for (var _i4 = y - 1; _i4 <= y + 1; _i4++) {
+        for (var _i3 = y - 1; _i3 <= y + 1; _i3++) {
           for (var _j2 = x - 1; _j2 <= x + ship.getLength(); _j2++) {
-            if (!illegalSquares.includes("".concat(_j2, ",").concat(_i4))) illegalSquares.push("".concat(_j2, ",").concat(_i4));
+            if (!illegalSquares.includes("".concat(_j2, ",").concat(_i3))) illegalSquares.push("".concat(_j2, ",").concat(_i3));
           }
         }
       } else {
         if (illegalSquares.includes("".concat(x, ",").concat(y + ship.getLength() - 1)) || illegalSquares.includes("".concat(x, ",").concat(y + ship.getLength() - 2)) || illegalSquares.includes("".concat(x, ",").concat(y + ship.getLength() - 3)) || y + ship.getLength() - 1 > 9) continue;
         board.placeShipY(ship, [x, y]);
-        for (var _i5 = y - 1; _i5 <= y + ship.getLength(); _i5++) {
+        for (var _i4 = y - 1; _i4 <= y + ship.getLength(); _i4++) {
           for (var _j3 = x - 1; _j3 <= x + 1; _j3++) {
-            if (!illegalSquares.includes("".concat(_j3, ",").concat(_i5))) illegalSquares.push("".concat(_j3, ",").concat(_i5));
+            if (!illegalSquares.includes("".concat(_j3, ",").concat(_i4))) illegalSquares.push("".concat(_j3, ",").concat(_i4));
           }
         }
       }
       break;
     }
-  }
+  });
   return board;
 };
 
@@ -447,6 +597,7 @@ var player = function player(type) {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   getShipNames: () => (/* binding */ getShipNames),
 /* harmony export */   getShips: () => (/* binding */ getShips),
 /* harmony export */   ship: () => (/* binding */ ship)
 /* harmony export */ });
@@ -476,13 +627,10 @@ var ship = function ship(shipLength, id) {
   };
 };
 var getShips = function getShips() {
-  return {
-    destroyer: ship(2, '1'),
-    submarine: ship(3, '2'),
-    cruiser: ship(3, '3'),
-    battleship: ship(4, '4'),
-    carrier: ship(5, '5')
-  };
+  return [ship(2, '1'), ship(3, '2'), ship(3, '3'), ship(4, '4'), ship(5, '5')];
+};
+var getShipNames = function getShipNames() {
+  return ['Destroyer', 'Submarine', 'Cruiser', 'Battleship', 'Carrier'];
 };
 
 
@@ -506,41 +654,221 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()((_node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0___default()));
+___CSS_LOADER_EXPORT___.push([module.id, "@import url(https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;700&display=swap);"]);
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, `#game {
-  display: flex;
-  justify-content: center;
-  gap: 40px;
+___CSS_LOADER_EXPORT___.push([module.id, `* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: "Lato", sans-serif;
+}
+
+body {
+  background-color: #334155;
+  color: white;
+  position: relative;
+  min-height: 100vh;
+  padding-bottom: 80px;
 }
 
 .board {
-  width: 300px;
-  height: 300px;
-  border: 1px solid black;
+  width: 400px;
+  margin: 20px 0px;
+  border: 1px solid white;
   display: flex;
   flex-wrap: wrap;
+  box-sizing: content-box;
+}
+.board .active {
+  background-color: #075985 !important;
 }
 .board div {
-  width: 28px;
-  height: 28px;
-  border: 1px solid black;
+  width: 38px;
+  height: 38px;
+  border: 1px solid white;
+  box-sizing: content-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.6em;
+  transition: background-color 0.2s;
 }
 .board .ship {
-  background-color: black;
+  background-color: #075985;
 }
 .board .hit {
-  background-color: red;
+  background-color: #9f1239;
 }
 .board .missed {
-  background-color: green;
+  background-color: #065f46;
 }
 .board .empty {
-  background-color: white;
+  background-color: transparent;
+}
+
+header {
+  text-align: center;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+header h1 {
+  font-size: 3.4em;
+}
+
+#display {
+  font-size: 1.8em;
+}
+
+#start {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+#start .place-instruction {
+  font-size: 1.6em;
+  font-weight: bold;
+}
+#start .rotate-instruction {
+  font-size: 1.3em;
+  color: #e2e8f0;
+  margin-bottom: 20px;
+}
+#start button {
+  padding: 10px 20px;
+  font-size: 1.2em;
+  background-color: transparent;
+  border: 2px solid white;
+  border-radius: 20px;
+  color: white;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+#start button:hover {
+  border-color: #075985;
+  color: #075985;
+}
+
+#game {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 60px;
+  position: relative;
+}
+#game h2 {
+  text-align: center;
+}
+
+#enemy,
+#friendly {
+  transition: background-color 0.2s;
+  padding: 15px;
+  border-radius: 20px;
+}
+
+#computer-board .empty:hover,
+#computer-board .ship:hover {
+  cursor: pointer;
+  background-color: #475569;
+}
+
+#friendly-status,
+#enemy-status {
+  padding: 10px;
+  margin-bottom: 20px;
+  font-size: 1.7em;
+  font-weight: bold;
+  text-align: center;
+}
+
+#enemy-ships h3,
+#friendly-ships h3 {
+  font-size: 1.4em;
+  margin-bottom: 5px;
+}
+#enemy-ships ul,
+#friendly-ships ul {
+  list-style: none;
+}
+#enemy-ships ul li,
+#friendly-ships ul li {
+  margin-bottom: 2px;
+  font-size: 1.1em;
+}
+
+#end-screen {
+  text-align: center;
+  position: fixed;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  z-index: 10;
+  width: 400px;
+  padding: 20px;
+  border-radius: 10px;
+  background-color: rgba(0, 0, 0, 0.4);
+}
+#end-screen p {
+  font-size: 2.2em;
+  margin-bottom: 10px;
+}
+#end-screen button {
+  padding: 10px 20px;
+  font-size: 1.2em;
+  background-color: transparent;
+  border: 2px solid white;
+  border-radius: 20px;
+  color: white;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+#end-screen button:hover {
+  border-color: #075985;
+  color: #075985;
 }
 
 .hidden {
   display: none !important;
-}`, "",{"version":3,"sources":["webpack://./src/styles/main.scss"],"names":[],"mappings":"AAAA;EACE,aAAA;EACA,uBAAA;EACA,SAAA;AACF;;AAEA;EACE,YAAA;EACA,aAAA;EACA,uBAAA;EACA,aAAA;EACA,eAAA;AACF;AACE;EACE,WAAA;EACA,YAAA;EACA,uBAAA;AACJ;AAEE;EACE,uBAAA;AAAJ;AAGE;EACE,qBAAA;AADJ;AAIE;EACE,uBAAA;AAFJ;AAKE;EACE,uBAAA;AAHJ;;AAOA;EACE,wBAAA;AAJF","sourcesContent":["#game {\r\n  display: flex;\r\n  justify-content: center;\r\n  gap: 40px;\r\n}\r\n\r\n.board {\r\n  width: 300px;\r\n  height: 300px;\r\n  border: 1px solid black;\r\n  display: flex;\r\n  flex-wrap: wrap;\r\n\r\n  div {\r\n    width: 28px;\r\n    height: 28px;\r\n    border: 1px solid black;\r\n  }\r\n\r\n  .ship {\r\n    background-color: black;\r\n  }\r\n\r\n  .hit {\r\n    background-color: red;\r\n  }\r\n\r\n  .missed {\r\n    background-color: green;\r\n  }\r\n\r\n  .empty {\r\n    background-color: white;\r\n  }\r\n}\r\n\r\n.hidden {\r\n  display: none !important;\r\n}\r\n"],"sourceRoot":""}]);
+}
+
+.end-screen-active {
+  transform: translate(-50%, -50%) scale(1) !important;
+}
+
+.invisible {
+  opacity: 0;
+}
+
+.sunk {
+  color: #9f1239;
+  text-decoration: line-through;
+}
+
+.playing {
+  background-color: #64748b;
+}
+
+footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  padding: 30px;
+  font-weight: bold;
+}
+footer p {
+  color: rgb(211, 211, 211);
+  text-align: center;
+}
+footer a {
+  text-decoration: none;
+  color: white;
+  transition: color 0.2s;
+}
+footer a:hover {
+  color: gray;
+}`, "",{"version":3,"sources":["webpack://./src/styles/index.scss","webpack://./src/styles/main.scss","webpack://./src/styles/start.scss","webpack://./src/styles/game.scss","webpack://./src/styles/footer.scss"],"names":[],"mappings":"AAEA;EACE,sBAAA;EACA,SAAA;EACA,UAAA;EACA,+BAAA;ACAF;;ADGA;EACE,yBAAA;EACA,YAAA;EACA,kBAAA;EACA,iBAAA;EACA,oBAAA;ACAF;;ADGA;EACE,YAAA;EACA,gBAAA;EAEA,uBAAA;EACA,aAAA;EACA,eAAA;EACA,uBAAA;ACDF;ADGE;EACE,oCAAA;ACDJ;ADIE;EACE,WAAA;EACA,YAAA;EACA,uBAAA;EACA,uBAAA;EACA,aAAA;EACA,mBAAA;EACA,uBAAA;EAEA,iBAAA;EACA,gBAAA;EACA,iCAAA;ACHJ;ADME;EACE,yBAAA;ACJJ;ADOE;EACE,yBAAA;ACLJ;ADQE;EACE,yBAAA;ACNJ;ADSE;EACE,6BAAA;ACPJ;;AClDA;EACE,kBAAA;EACA,aAAA;EACA,mBAAA;ADqDF;ACnDE;EACE,gBAAA;ADqDJ;;ACjDA;EACE,gBAAA;ADoDF;;ACjDA;EACE,aAAA;EACA,sBAAA;EACA,mBAAA;EACA,QAAA;ADoDF;AClDE;EACE,gBAAA;EACA,iBAAA;ADoDJ;ACjDE;EACE,gBAAA;EACA,cAAA;EACA,mBAAA;ADmDJ;AChDE;EACE,kBAAA;EACA,gBAAA;EACA,6BAAA;EACA,uBAAA;EACA,mBAAA;EACA,YAAA;EACA,eAAA;EACA,yCACE;ADiDN;AC9CI;EACE,qBAAA;EACA,cAAA;ADgDN;;AE7FA;EACE,aAAA;EACA,uBAAA;EACA,eAAA;EACA,SAAA;EACA,kBAAA;AFgGF;AE9FE;EACE,kBAAA;AFgGJ;;AE5FA;;EAEE,iCAAA;EACA,aAAA;EACA,mBAAA;AF+FF;;AEzFI;;EACE,eAAA;EACA,yBAAA;AF6FN;;AExFA;;EAEE,aAAA;EACA,mBAAA;EACA,gBAAA;EACA,iBAAA;EACA,kBAAA;AF2FF;;AEtFE;;EACE,gBAAA;EACA,kBAAA;AF0FJ;AExFE;;EACE,gBAAA;AF2FJ;AEzFI;;EACE,kBAAA;EACA,gBAAA;AF4FN;;AEvFA;EACE,kBAAA;EACA,eAAA;EACA,QAAA;EACA,SAAA;EACA,yCAAA;EACA,WAAA;EAEA,YAAA;EACA,aAAA;EACA,mBAAA;EACA,oCAAA;AFyFF;AEvFE;EACE,gBAAA;EACA,mBAAA;AFyFJ;AEtFE;EACE,kBAAA;EACA,gBAAA;EACA,6BAAA;EACA,uBAAA;EACA,mBAAA;EACA,YAAA;EACA,eAAA;EACA,yCACE;AFuFN;AEpFI;EACE,qBAAA;EACA,cAAA;AFsFN;;AEjFA;EACE,wBAAA;AFoFF;;AEjFA;EACE,oDAAA;AFoFF;;AEjFA;EACE,UAAA;AFoFF;;AEjFA;EACE,cAAA;EACA,6BAAA;AFoFF;;AEjFA;EACE,yBAAA;AFoFF;;AGjMA;EACE,kBAAA;EACA,SAAA;EACA,WAAA;EAEA,aAAA;EAEA,iBAAA;AHkMF;AGjME;EACE,yBAAA;EACA,kBAAA;AHmMJ;AGjME;EACE,qBAAA;EACA,YAAA;EACA,sBAAA;AHmMJ;AGjMI;EACE,WAAA;AHmMN","sourcesContent":["@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;700&display=swap');\r\n\r\n* {\r\n  box-sizing: border-box;\r\n  margin: 0;\r\n  padding: 0;\r\n  font-family: 'Lato', sans-serif;\r\n}\r\n\r\nbody {\r\n  background-color: #334155;\r\n  color: white;\r\n  position: relative;\r\n  min-height: 100vh;\r\n  padding-bottom: 80px;\r\n}\r\n\r\n.board {\r\n  width: 400px;\r\n  margin: 20px 0px;\r\n\r\n  border: 1px solid white;\r\n  display: flex;\r\n  flex-wrap: wrap;\r\n  box-sizing: content-box;\r\n\r\n  .active {\r\n    background-color: #075985 !important;\r\n  }\r\n\r\n  div {\r\n    width: 38px;\r\n    height: 38px;\r\n    border: 1px solid white;\r\n    box-sizing: content-box;\r\n    display: flex;\r\n    align-items: center;\r\n    justify-content: center;\r\n\r\n    font-weight: bold;\r\n    font-size: 1.6em;\r\n    transition: background-color 0.2s;\r\n  }\r\n\r\n  .ship {\r\n    background-color: #075985;\r\n  }\r\n\r\n  .hit {\r\n    background-color: #9f1239;\r\n  }\r\n\r\n  .missed {\r\n    background-color: #065f46;\r\n  }\r\n\r\n  .empty {\r\n    background-color: transparent;\r\n  }\r\n}\r\n","@import url(\"https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;700&display=swap\");\n* {\n  box-sizing: border-box;\n  margin: 0;\n  padding: 0;\n  font-family: \"Lato\", sans-serif;\n}\n\nbody {\n  background-color: #334155;\n  color: white;\n  position: relative;\n  min-height: 100vh;\n  padding-bottom: 80px;\n}\n\n.board {\n  width: 400px;\n  margin: 20px 0px;\n  border: 1px solid white;\n  display: flex;\n  flex-wrap: wrap;\n  box-sizing: content-box;\n}\n.board .active {\n  background-color: #075985 !important;\n}\n.board div {\n  width: 38px;\n  height: 38px;\n  border: 1px solid white;\n  box-sizing: content-box;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  font-weight: bold;\n  font-size: 1.6em;\n  transition: background-color 0.2s;\n}\n.board .ship {\n  background-color: #075985;\n}\n.board .hit {\n  background-color: #9f1239;\n}\n.board .missed {\n  background-color: #065f46;\n}\n.board .empty {\n  background-color: transparent;\n}\n\nheader {\n  text-align: center;\n  padding: 20px;\n  margin-bottom: 20px;\n}\nheader h1 {\n  font-size: 3.4em;\n}\n\n#display {\n  font-size: 1.8em;\n}\n\n#start {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  gap: 5px;\n}\n#start .place-instruction {\n  font-size: 1.6em;\n  font-weight: bold;\n}\n#start .rotate-instruction {\n  font-size: 1.3em;\n  color: #e2e8f0;\n  margin-bottom: 20px;\n}\n#start button {\n  padding: 10px 20px;\n  font-size: 1.2em;\n  background-color: transparent;\n  border: 2px solid white;\n  border-radius: 20px;\n  color: white;\n  cursor: pointer;\n  transition: border-color 0.2s, color 0.2s;\n}\n#start button:hover {\n  border-color: #075985;\n  color: #075985;\n}\n\n#game {\n  display: flex;\n  justify-content: center;\n  flex-wrap: wrap;\n  gap: 60px;\n  position: relative;\n}\n#game h2 {\n  text-align: center;\n}\n\n#enemy,\n#friendly {\n  transition: background-color 0.2s;\n  padding: 15px;\n  border-radius: 20px;\n}\n\n#computer-board .empty:hover,\n#computer-board .ship:hover {\n  cursor: pointer;\n  background-color: #475569;\n}\n\n#friendly-status,\n#enemy-status {\n  padding: 10px;\n  margin-bottom: 20px;\n  font-size: 1.7em;\n  font-weight: bold;\n  text-align: center;\n}\n\n#enemy-ships h3,\n#friendly-ships h3 {\n  font-size: 1.4em;\n  margin-bottom: 5px;\n}\n#enemy-ships ul,\n#friendly-ships ul {\n  list-style: none;\n}\n#enemy-ships ul li,\n#friendly-ships ul li {\n  margin-bottom: 2px;\n  font-size: 1.1em;\n}\n\n#end-screen {\n  text-align: center;\n  position: fixed;\n  top: 40%;\n  left: 50%;\n  transform: translate(-50%, -50%) scale(0);\n  z-index: 10;\n  width: 400px;\n  padding: 20px;\n  border-radius: 10px;\n  background-color: rgba(0, 0, 0, 0.4);\n}\n#end-screen p {\n  font-size: 2.2em;\n  margin-bottom: 10px;\n}\n#end-screen button {\n  padding: 10px 20px;\n  font-size: 1.2em;\n  background-color: transparent;\n  border: 2px solid white;\n  border-radius: 20px;\n  color: white;\n  cursor: pointer;\n  transition: border-color 0.2s, color 0.2s;\n}\n#end-screen button:hover {\n  border-color: #075985;\n  color: #075985;\n}\n\n.hidden {\n  display: none !important;\n}\n\n.end-screen-active {\n  transform: translate(-50%, -50%) scale(1) !important;\n}\n\n.invisible {\n  opacity: 0;\n}\n\n.sunk {\n  color: #9f1239;\n  text-decoration: line-through;\n}\n\n.playing {\n  background-color: #64748b;\n}\n\nfooter {\n  position: absolute;\n  bottom: 0;\n  width: 100%;\n  padding: 30px;\n  font-weight: bold;\n}\nfooter p {\n  color: rgb(211, 211, 211);\n  text-align: center;\n}\nfooter a {\n  text-decoration: none;\n  color: white;\n  transition: color 0.2s;\n}\nfooter a:hover {\n  color: gray;\n}","header {\r\n  text-align: center;\r\n  padding: 20px;\r\n  margin-bottom: 20px;\r\n\r\n  h1 {\r\n    font-size: 3.4em;\r\n  }\r\n}\r\n\r\n#display {\r\n  font-size: 1.8em;\r\n}\r\n\r\n#start {\r\n  display: flex;\r\n  flex-direction: column;\r\n  align-items: center;\r\n  gap: 5px;\r\n\r\n  .place-instruction {\r\n    font-size: 1.6em;\r\n    font-weight: bold;\r\n  }\r\n\r\n  .rotate-instruction {\r\n    font-size: 1.3em;\r\n    color: #e2e8f0;\r\n    margin-bottom: 20px;\r\n  }\r\n\r\n  button {\r\n    padding: 10px 20px;\r\n    font-size: 1.2em;\r\n    background-color: transparent;\r\n    border: 2px solid white;\r\n    border-radius: 20px;\r\n    color: white;\r\n    cursor: pointer;\r\n    transition:\r\n      border-color 0.2s,\r\n      color 0.2s;\r\n\r\n    &:hover {\r\n      border-color: #075985;\r\n      color: #075985;\r\n    }\r\n  }\r\n}\r\n","#game {\r\n  display: flex;\r\n  justify-content: center;\r\n  flex-wrap: wrap;\r\n  gap: 60px;\r\n  position: relative;\r\n\r\n  h2 {\r\n    text-align: center;\r\n  }\r\n}\r\n\r\n#enemy,\r\n#friendly {\r\n  transition: background-color 0.2s;\r\n  padding: 15px;\r\n  border-radius: 20px;\r\n}\r\n\r\n#computer-board {\r\n  .empty,\r\n  .ship {\r\n    &:hover {\r\n      cursor: pointer;\r\n      background-color: #475569;\r\n    }\r\n  }\r\n}\r\n\r\n#friendly-status,\r\n#enemy-status {\r\n  padding: 10px;\r\n  margin-bottom: 20px;\r\n  font-size: 1.7em;\r\n  font-weight: bold;\r\n  text-align: center;\r\n}\r\n\r\n#enemy-ships,\r\n#friendly-ships {\r\n  h3 {\r\n    font-size: 1.4em;\r\n    margin-bottom: 5px;\r\n  }\r\n  ul {\r\n    list-style: none;\r\n\r\n    li {\r\n      margin-bottom: 2px;\r\n      font-size: 1.1em;\r\n    }\r\n  }\r\n}\r\n\r\n#end-screen {\r\n  text-align: center;\r\n  position: fixed;\r\n  top: 40%;\r\n  left: 50%;\r\n  transform: translate(-50%, -50%) scale(0);\r\n  z-index: 10;\r\n\r\n  width: 400px;\r\n  padding: 20px;\r\n  border-radius: 10px;\r\n  background-color: rgba(0, 0, 0, 0.4);\r\n\r\n  p {\r\n    font-size: 2.2em;\r\n    margin-bottom: 10px;\r\n  }\r\n\r\n  button {\r\n    padding: 10px 20px;\r\n    font-size: 1.2em;\r\n    background-color: transparent;\r\n    border: 2px solid white;\r\n    border-radius: 20px;\r\n    color: white;\r\n    cursor: pointer;\r\n    transition:\r\n      border-color 0.2s,\r\n      color 0.2s;\r\n\r\n    &:hover {\r\n      border-color: #075985;\r\n      color: #075985;\r\n    }\r\n  }\r\n}\r\n\r\n.hidden {\r\n  display: none !important;\r\n}\r\n\r\n.end-screen-active {\r\n  transform: translate(-50%, -50%) scale(1) !important;\r\n}\r\n\r\n.invisible {\r\n  opacity: 0;\r\n}\r\n\r\n.sunk {\r\n  color: #9f1239;\r\n  text-decoration: line-through;\r\n}\r\n\r\n.playing {\r\n  background-color: #64748b;\r\n}\r\n","footer {\r\n  position: absolute;\r\n  bottom: 0;\r\n  width: 100%;\r\n\r\n  padding: 30px;\r\n\r\n  font-weight: bold;\r\n  p {\r\n    color: rgb(211, 211, 211);\r\n    text-align: center;\r\n  }\r\n  a {\r\n    text-decoration: none;\r\n    color: white;\r\n    transition: color 0.2s;\r\n\r\n    &:hover {\r\n      color: gray;\r\n    }\r\n  }\r\n}\r\n"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -993,4 +1321,4 @@ module.exports = styleTagTransform;
 /******/ var __webpack_exports__ = (__webpack_exec__("./src/index.js"));
 /******/ }
 ]);
-//# sourceMappingURL=bundlee0aa53a42d8cc8b937cf.js.map
+//# sourceMappingURL=bundle53e55c5f0781b8b701e9.js.map
